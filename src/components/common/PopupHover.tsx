@@ -20,7 +20,7 @@ function PopupHover({ title, direction }: PopupHoverProps) {
 
   return (
     <div
-      className={`popup-hover absolute opacity-0 group-hover:opacity-100 z-1 ${directionConfig.box} bg-black dark:bg-white rounded-[4px] my-transition`}
+      className={`popup-hover max-sm:hidden absolute opacity-0 group-hover:opacity-100 z-1 ${directionConfig.box} bg-black dark:bg-white rounded-[4px] my-transition`}
     >
       <span className="title block text-smallCaption text-white dark:text-gray-dark text-nowrap capitalize py-2 px-2">
         {title}

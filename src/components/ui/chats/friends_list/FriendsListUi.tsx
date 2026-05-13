@@ -26,7 +26,7 @@ function FriendsListUi({
   handleLastMessageTime,
 }: FriendsListUiProps) {
   return (
-    <ul className="friends-list flex flex-col mt-3 divide-y divide-gray-light dark:divide-gray max-h-57.5 overflow-scroll my-scrollbar">
+    <ul className="friends-list flex flex-col mt-3 divide-y divide-gray-light dark:divide-gray max-h-90 overflow-scroll my-scrollbar">
       {count && friendsData.friendsList.length ? (
         friendsData.friendsList.map((friend) => {
           return (

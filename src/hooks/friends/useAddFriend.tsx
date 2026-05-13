@@ -57,6 +57,8 @@ export function useAddFriend(): UseAddFriendReturn {
 
         // Reset All Values;
         config.form.reset();
+
+        location.reload();
       }
     } catch (error: unknown) {
       // Errors Mix Between Try Errors & Catch Errors In Api Route

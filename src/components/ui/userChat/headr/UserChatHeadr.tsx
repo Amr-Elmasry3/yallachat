@@ -11,17 +11,13 @@ import { BiSolidPhoneCall } from "react-icons/bi";
 
 // *********************** Logic Imports ***********************
 // => Ready To Use Hooks
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useState, useEffect } from "react";
 
 // => My Custom Hooks
 import { useSupabaseChannel } from "@/hooks/useSupbaseChannel";
 
 // => Contexts
 import { VoiceCallContext } from "@/contexts/VoiceCallContext";
-
-// => Libs & Utils
-import { formatTimeFromISO } from "@/utils/formatTimeFromISO";
-import { formatDateFromISO } from "@/utils/formatDateFromISO";
 
 // ***************** Types & Variables Imports *****************
 // => Types & Interfaces
@@ -46,6 +42,13 @@ function UserChatHeadr({
   // => Use Contexts
   const { handleOutgoingCallData } = useContext(VoiceCallContext);
 
+  // => States & Refs
+  const [localFriend, setLocalFriend] = useState(friendData);
+
+  useEffect(() => {
+    setLocalFriend(friendData);
+  }, [friendData]);
+
   // => Functions
   // --- Set Friend Info
   const handleCall = () => {
@@ -68,31 +71,40 @@ function UserChatHeadr({
     [handleFriendData, friendData],
   );
 
-  const handleLastSeen = (lastSeenISO: string | null): string | null => {
-    if (!lastSeenISO) return null;
+  const handleLastSeen = (lastSeenISO: string | null): string | undefined => {
+    if (!lastSeenISO) return;
 
-    return formatDateFromISO(lastSeenISO) === formatDateFromISO("")
-      ? "Last seen at " + formatTimeFromISO(lastSeenISO)
-      : "Last seen at " + formatDateFromISO(lastSeenISO);
+    const last = new Date(lastSeenISO);
+    const now = new Date();
+    const diffSeconds = Math.floor((now.getTime() - last.getTime()) / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSeconds < 60) return "Online";
+    if (diffMinutes < 60) return `Last seen ${diffMinutes} minutes ago`;
+    if (diffHours < 24) return `Last seen ${diffHours} hours ago`;
+    if (diffDays === 1) return "Last seen yesterday";
+    return `Last seen on ${last.toLocaleDateString()}`;
   };
 
   // Setup Supabase Real-timr Changes For Friend Status Updates
   useSupabaseChannel({
-    channelName: "user-status",
+    channelName: `user-status-${localFriend.id}`,
     events: [
       {
         event: "UPDATE",
         schema: "public",
         table: "users",
-        filter: `id=eq.${friendData.id}`,
+        filter: `id=eq.${localFriend.id}`,
         callback: handleFriendUpdate,
       },
     ],
-    enabled: !!friendData,
+    enabled: !!localFriend?.id,
   });
 
   return (
-    <div className="user-chat-headr bg-[#ffffff0d] dark:bg-[#2e2e2e80] min-h-20 p-4 flex items-center gap-2 border-b-2 dark:border-b border-b-solid border-b-[#eaeaf1] dark:border-b-gray">
+    <div className="user-chat-headr sticky top-0 bg-[#ffffff0d] dark:bg-[#2e2e2e80] min-h-20 p-4 flex items-center gap-2 border-b-2 dark:border-b border-b-solid border-b-[#eaeaf1] dark:border-b-gray">
       <BackButton />
 
       {isLoading ? (
