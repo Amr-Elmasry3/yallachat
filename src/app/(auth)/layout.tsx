@@ -13,7 +13,7 @@ function AuthLayout({
 }>) {
   return (
     <div className="relative bg-linear-to-l from-dark-main dark:from-gray-dark to-main dark:to-gray-dark min-h-screen max-xs:p-3.5 p-5 flex max-sm:flex-col max-sm:gap-7">
-      <div className="relative flex-1">
+      <div className="relative max-sm:hidden block flex-1">
         <Logo />
 
         <Image
