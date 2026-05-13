@@ -31,7 +31,7 @@ A real-time chat application built with modern web technologies, allowing users 
 
 ## 📸 Preview
 
-![YallaChat Preview]([YOUR-IMAGE-LINK-HERE](https://res.cloudinary.com/dqymivlkf/image/upload/v1778694554/yallachat-1_jdrfy7.png))
+![YallaChat Preview](https://res.cloudinary.com/dqymivlkf/image/upload/v1778694554/yallachat-1_jdrfy7.png)
 
 ---
 
