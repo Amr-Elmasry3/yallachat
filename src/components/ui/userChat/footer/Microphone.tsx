@@ -40,14 +40,26 @@ function Microphone({ handleSendVoice }: MicrophoneProps) {
 
   const { canvasRef } = useWaveform(isRecording);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    startRecording();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startRecording();
+  };
+
   return (
-    <div className="microphone relative group flex items-center justify-center">
+    <div className="microphone relative group flex items-center justify-center select-none [-webkit-tap-highlight-color:transparent]">
       <div
-        onMouseDown={startRecording}
+        onMouseDown={handleMouseDown}
         onMouseUp={stopRecording}
         onMouseLeave={cancelRecording}
-        onTouchStart={startRecording}
+        onTouchStart={handleTouchStart}
         onTouchEnd={stopRecording}
+        onTouchCancel={cancelRecording}
+        onContextMenu={(e) => e.preventDefault()}
         className="relative z-10"
       >
         <BiMicrophone
