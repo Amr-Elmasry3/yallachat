@@ -50,6 +50,21 @@ function Microphone({ handleSendVoice }: MicrophoneProps) {
     startRecording();
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const isInside =
+      touch.clientX >= rect.left &&
+      touch.clientX <= rect.right &&
+      touch.clientY >= rect.top &&
+      touch.clientY <= rect.bottom;
+
+    if (!isInside) {
+      cancelRecording();
+    }
+  };
+
   return (
     <div className="microphone relative group flex items-center justify-center select-none [-webkit-tap-highlight-color:transparent]">
       <div
@@ -58,6 +73,7 @@ function Microphone({ handleSendVoice }: MicrophoneProps) {
         onMouseLeave={cancelRecording}
         onTouchStart={handleTouchStart}
         onTouchEnd={stopRecording}
+        onTouchMove={handleTouchMove}
         onTouchCancel={cancelRecording}
         onContextMenu={(e) => e.preventDefault()}
         className="relative z-10"
