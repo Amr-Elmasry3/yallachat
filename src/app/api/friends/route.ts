@@ -11,7 +11,7 @@ import { verifyToken } from "@/lib/auth";
 import { removeToken } from "@/lib/tokenManager";
 
 // Import My Types And Interfaces
-import { ApiResponse, FriendsApiData } from "@/lib/types";
+import { ApiResponse } from "@/lib/types";
 
 import jwt from "jsonwebtoken";
 
@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 1. جلب الأصدقاء
+    // Bring friends
     const { data: friendships, error: friendsError } = await supabaseServer
       .from("friendships")
       .select(
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 2. جلب كل المحادثات المباشرة مرة واحدة
+    // Bring all live chats at once
     const { data: conversations } = await supabaseServer
       .from("conversations")
       .select(
@@ -247,19 +247,24 @@ export async function GET(request: NextRequest) {
       )
       .eq("type", "direct");
 
-    // 3. جلب آخر رسالة (غير محذوفة) وعدد غير المقروء لكل محادثة
+    // Retrieve the last (undeleted) message and the number of unread messages for each conversation.
     const friendsWithDetails = await Promise.all(
       (friendships || []).map(async (friendship) => {
         // تحديد الصديق
-        const isCurrentUserUser = friendship.user?.id === userId;
-        const friendData = isCurrentUserUser
-          ? friendship.friend
+        const userRecord = Array.isArray(friendship.user)
+          ? friendship.user[0]
           : friendship.user;
+        const friendRecord = Array.isArray(friendship.friend)
+          ? friendship.friend[0]
+          : friendship.friend;
+
+        const isCurrentUserUser = userRecord?.id === userId;
+        const friendData = isCurrentUserUser ? friendRecord : userRecord;
         const friendId = friendData?.id;
 
         if (!friendId) return null;
 
-        // البحث عن conversationId
+        // Search for conversationId
         let conversationId = null;
         for (const conv of conversations || []) {
           const participants = conv.conversation_participants || [];
@@ -277,12 +282,12 @@ export async function GET(request: NextRequest) {
         let unreadCount = 0;
 
         if (conversationId) {
-          // جلب آخر رسالة (is_deleted = false)
+          // Retrieve last message (is_deleted = false)
           const { data: lastMsgData } = await supabaseServer
             .from("messages")
             .select("*")
             .eq("conversation_id", conversationId)
-            .eq("is_deleted", false) // 👈 بس الغير محذوفة
+            .eq("is_deleted", false) // But the ones that haven't been deleted
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -302,12 +307,12 @@ export async function GET(request: NextRequest) {
             };
           }
 
-          // جلب عدد الرسائل غير المقروءة (غير المحذوفة)
+          // Retrieve the number of unread (non-deleted) messages
           const { count } = await supabaseServer
             .from("messages")
             .select("*", { count: "exact", head: true })
             .eq("conversation_id", conversationId)
-            .eq("is_deleted", false) // 👈 بس الغير محذوفة
+            .eq("is_deleted", false) // But the ones that haven't been deleted
             .neq("sender_id", userId)
             .neq("status", "seen");
 
@@ -327,7 +332,7 @@ export async function GET(request: NextRequest) {
 
     const validFriends = friendsWithDetails.filter((f) => f !== null);
 
-    return NextResponse.json<ApiResponse<FriendsApiData>>({
+    return NextResponse.json<ApiResponse<unknown>>({
       success: true,
       data: {
         count: validFriends.length,
@@ -390,7 +395,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // 1. حذف من friendships (علاقة الصداقة)
+    // Delete from friendships (friendship relationship)
     const { error: friendshipError } = await supabaseServer
       .from("friendships")
       .delete()
@@ -406,21 +411,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // 2. لو في conversationId، نحذف كل حاجة متعلقة بالمحادثة
+    // If there is a conversationId, delete everything related to the conversation.
     if (conversationId) {
-      // نشيل المشاركين
+      // We remove the participants
       await supabaseServer
         .from("conversation_participants")
         .delete()
         .eq("conversation_id", conversationId);
 
-      // نشيل الرسائل
+      // We send messages
       await supabaseServer
         .from("messages")
         .delete()
         .eq("conversation_id", conversationId);
 
-      // نشيل المحادثة نفسها
+      // We have the same conversation
       await supabaseServer
         .from("conversations")
         .delete()

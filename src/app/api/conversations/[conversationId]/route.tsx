@@ -11,7 +11,7 @@ import { verifyToken } from "@/lib/auth";
 import { removeToken } from "@/lib/tokenManager";
 
 // Import My Types
-import { ApiResponse, ConversationDetails } from "@/lib/types";
+import { ApiResponse } from "@/lib/types";
 
 import jwt from "jsonwebtoken";
 
@@ -163,7 +163,7 @@ export async function GET(
     // Sort The Messages In Ascending Order (Oldest To Newest)
     const sortedMessages = messages?.reverse() || [];
 
-    return NextResponse.json<ApiResponse<ConversationDetails>>({
+    return NextResponse.json<ApiResponse<unknown>>({
       success: true,
       data: {
         conversation: {
