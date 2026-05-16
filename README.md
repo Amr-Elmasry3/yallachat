@@ -37,6 +37,6 @@ A real-time chat application built with modern web technologies, allowing users 
 
 ## 🔗 Live Demo
 
-https://yallachat.rho.vercel.app
+https://yallachat-rho.vercel.app
 
 ---
